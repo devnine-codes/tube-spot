@@ -1,0 +1,107 @@
+/* src/index.css */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 기본 설정 */
+body {
+    background: #000;
+    min-height: 100vh;
+    margin: 0;
+    overflow-x: hidden;
+}
+
+#root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header, Main, Footer 스타일 */
+header {
+    background-color: #1f2937;
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+main {
+    flex-grow: 1;
+    background-color: #f3f4f6;
+    padding: 0;
+}
+
+footer {
+    background-color: #1f2937;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 즐겨찾기 버튼 */
+button {
+    background-color: #1f2937;
+    color: white;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button:hover {
+    background-color: #3b82f6; /* hover 시 파란색으로 변경 */
+}
+
+/* 카드 스타일 */
+.card {
+    background-color: #1f2937;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.card img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+/* 즐겨찾기 및 카테고리 텍스트 스타일 */
+.card h3, .card h2 {
+    color: white;
+}
+
+.card p {
+    color: #a0aec0;
+}
+
+/* 그라데이션 배경 */
+.bg-gradient-to-b {
+    background: linear-gradient(to bottom, #000000, #111827, #1f2937);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .grid-cols-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-cols-1 {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,50 @@
+/* 전체 배경에 부드러운 그라데이션 추가 */
+.bg-gray-50 {
+    background: linear-gradient(to bottom, #1c1c1c, #3b3b3b);
+    color: white;
+}
+
+/* 카테고리 목록 제목 스타일 */
+h1 {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+/* 카드 스타일 */
+.card {
+    background-color: #2e2e2e;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    text-align: center;
+}
+
+/* 카드 호버 시 효과 */
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px);
+}
+
+/* 카드 제목 스타일 */
+.card h2 {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #f1f1f1;
+    margin: 0.5rem 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .grid-cols-4 {
+        grid-template-columns: 1fr;
+    }
+}

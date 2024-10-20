@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "es6",                           // 호환성을 위해 ES5 타겟 (필요시 'ES6'으로 변경 가능)
+    "lib": ["dom", "dom.iterable", "esnext"],   // 사용 라이브러리 설정
+    "baseUrl": "./",                            // 경로의 기준을 프로젝트 루트로 설정
+    "paths": {
+      "@/*": ["src/*"]                          // '@'를 'src' 폴더로 매핑
+    },
+    "allowJs": true,                            // JS 파일도 허용
+    "skipLibCheck": true,                       // 라이브러리 타입 검사 생략 (속도 향상)
+    "esModuleInterop": true,                    // CommonJS와 호환성 설정
+    "allowSyntheticDefaultImports": true,       // default import 사용 허용
+    "strict": true,                             // 엄격한 타입 검사 옵션
+    "module": "esnext",                         // 최신 ES 모듈 사용
+    "moduleResolution": "node",                 // Node.js 방식의 모듈 해석
+    "resolveJsonModule": true,                  // JSON 파일을 import 가능하게 설정
+    "isolatedModules": true,                    // 개별 모듈 처리 (React에서 중요)
+    "noEmit": true,                             // 실제로 파일을 출력하지 않음 (타입체크만)
+    "jsx": "react-jsx"                          // React JSX 지원
+  },
+  "include": ["src"]                            // 'src' 폴더 내의 모든 파일을 컴파일에 포함
+}
