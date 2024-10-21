@@ -7,18 +7,46 @@ const Home: React.FC = () => {
     const [favorites, setFavorites] = useState<any[]>([]);    // 즐겨찾기 상태
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);  // 즐겨찾기 펼침/접힘 상태
 
-    // 카테고리 불러오기
+    // 캐시에서 카테고리 정보 불러오기
+    const getCachedCategories = () => {
+        const cachedData = localStorage.getItem('categories');
+        return cachedData ? JSON.parse(cachedData) : null;
+    };
+
+    // 카테고리 정보를 로컬 스토리지에 저장
+    const cacheCategories = (data: any) => {
+        localStorage.setItem('categories', JSON.stringify(data));
+    };
+
+    // 카테고리 불러오기 (캐싱 적용)
     useEffect(() => {
         const fetchCategories = async () => {
-            try {
-                const data = await getCategories();
-                setCategories(data);
-            } catch (error) {
-                console.error('카테고리 데이터를 불러오는 데 실패했습니다.', error);
+            const cachedCategories = getCachedCategories();
+            if (cachedCategories) {
+                setCategories(cachedCategories);
+            } else {
+                try {
+                    const data = await getCategories();
+                    setCategories(data);
+                    cacheCategories(data);
+                } catch (error) {
+                    console.error('카테고리 데이터를 불러오는 데 실패했습니다.', error);
+                }
             }
         };
         fetchCategories();
     }, []);
+
+    // 캐시에서 채널 정보 불러오기
+    const getCachedChannel = (id: string) => {
+        const cachedData = localStorage.getItem(`channel_${id}`);
+        return cachedData ? JSON.parse(cachedData) : null;
+    };
+
+    // 채널 정보를 로컬 스토리지에 저장
+    const cacheChannel = (id: string, data: any) => {
+        localStorage.setItem(`channel_${id}`, JSON.stringify(data));
+    };
 
     // 즐겨찾기 불러오기
     useEffect(() => {
@@ -27,7 +55,16 @@ const Home: React.FC = () => {
             if (savedFavorites) {
                 const favoriteIds = JSON.parse(savedFavorites);
                 const favoriteChannels = await Promise.all(
-                    favoriteIds.map((id: string) => getChannelDetails(id))
+                    favoriteIds.map(async (id: string) => {
+                        const cachedChannel = getCachedChannel(id);
+                        if (cachedChannel) {
+                            return cachedChannel;
+                        } else {
+                            const channelData = await getChannelDetails(id);
+                            cacheChannel(id, channelData);
+                            return channelData;
+                        }
+                    })
                 );
                 setFavorites(favoriteChannels);
             }
