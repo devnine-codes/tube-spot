@@ -66,7 +66,7 @@ const Search: React.FC = () => {
                             <div
                                 key={channel.id.channelId}
                                 className="card cursor-pointer transition hover:shadow-lg bg-gray-800 text-white"
-                                onClick={() => handleChannelClick(channel.id.channelId)}
+                                onClick={() => navigate(`/channel/${channel.id.channelId}`)}
                             >
                                 <img
                                     src={thumbnailUrl}

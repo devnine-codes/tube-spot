@@ -11,6 +11,12 @@ const Header: React.FC = () => {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     const goHome = () => {
         navigate('/');
     };
@@ -25,6 +31,7 @@ const Header: React.FC = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     placeholder="채널 검색"
                     className="p-2 rounded-md bg-gray-700 text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
