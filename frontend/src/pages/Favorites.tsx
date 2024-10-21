@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 import { getChannelDetails } from '../services/api';
 
 const Favorites: React.FC = () => {
@@ -7,7 +6,7 @@ const Favorites: React.FC = () => {
 
     useEffect(() => {
         const fetchFavorites = async () => {
-            const savedFavorites = Cookies.get('favorites');
+            const savedFavorites = localStorage.getItem('favorites');
             if (savedFavorites) {
                 const favoriteIds = JSON.parse(savedFavorites);
                 const favoriteChannels = await Promise.all(
