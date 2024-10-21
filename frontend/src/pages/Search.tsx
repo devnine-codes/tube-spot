@@ -12,14 +12,31 @@ const Search: React.FC = () => {
     const [searchInput, setSearchInput] = useState(query);
     const navigate = useNavigate();
 
+    // 캐시된 검색 결과 가져오기
+    const getCachedSearchResults = (query: string) => {
+        const cachedData = localStorage.getItem(`search_${query}`);
+        return cachedData ? JSON.parse(cachedData) : null;
+    };
+
+    // 검색 결과를 캐시에 저장
+    const cacheSearchResults = (query: string, data: any) => {
+        localStorage.setItem(`search_${query}`, JSON.stringify(data));
+    };
+
     useEffect(() => {
         const fetchChannels = async () => {
             if (query) {
-                const data = await searchChannel(query);
-                const validChannels = data.filter(
-                    (channel: any) => channel?.snippet?.thumbnails?.medium
-                );
-                setChannels(validChannels);
+                const cachedResults = getCachedSearchResults(query);
+                if (cachedResults) {
+                    setChannels(cachedResults);
+                } else {
+                    const data = await searchChannel(query);
+                    const validChannels = data.filter(
+                        (channel: any) => channel?.snippet?.thumbnails?.medium
+                    );
+                    setChannels(validChannels);
+                    cacheSearchResults(query, validChannels);
+                }
             }
         };
         fetchChannels();

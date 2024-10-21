@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import Cookies from 'js-cookie'; // 쿠키 라이브러리
 import { getChannelDetails, getChannelVideos } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
 
@@ -9,45 +8,52 @@ const Channel: React.FC = () => {
     const [channel, setChannel] = useState<any>(null);
     const [videos, setVideos] = useState<any[]>([]);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
-    const [isFavorite, setIsFavorite] = useState<boolean>(false); // 즐겨찾기 여부
+    const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchChannelData = async () => {
             if (id) {
-                const channelData = await getChannelDetails(id);
-                setChannel(channelData);
+                const cachedChannel = localStorage.getItem(`channel_${id}`);
+                if (cachedChannel) {
+                    setChannel(JSON.parse(cachedChannel));
+                } else {
+                    const channelData = await getChannelDetails(id);
+                    setChannel(channelData);
+                    localStorage.setItem(`channel_${id}`, JSON.stringify(channelData));
+                }
 
-                const playlistId = channelData.contentDetails.relatedPlaylists.uploads;
-                const videoData = await getChannelVideos(playlistId);
-                setVideos(videoData);
+                const playlistId = channel?.contentDetails?.relatedPlaylists?.uploads;
+                if (playlistId) {
+                    const videoData = await getChannelVideos(playlistId);
+                    setVideos(videoData);
+                }
             }
         };
+
         fetchChannelData();
-        checkFavoriteStatus(); // 즐겨찾기 상태 확인
+        checkFavoriteStatus();
     }, [id]);
 
-    // 쿠키에서 즐겨찾기 상태 확인
+    // 로컬 스토리지에서 즐겨찾기 상태 확인
     const checkFavoriteStatus = () => {
-        const favorites = Cookies.get('favorites'); // 쿠키에서 'favorites' 가져오기
+        const favorites = localStorage.getItem('favorites');
         const favoriteList = favorites ? JSON.parse(favorites) : [];
         setIsFavorite(favoriteList.includes(id));
     };
 
     // 즐겨찾기 추가/삭제 함수
     const toggleFavorite = () => {
-        const favorites = Cookies.get('favorites');
+        const favorites = localStorage.getItem('favorites');
         let favoriteList = favorites ? JSON.parse(favorites) : [];
 
         if (favoriteList.includes(id)) {
-            // 즐겨찾기에 이미 있으면 삭제
             favoriteList = favoriteList.filter((favId: string) => favId !== id);
         } else {
-            // 없으면 추가
             favoriteList.push(id);
         }
 
-        Cookies.set('favorites', JSON.stringify(favoriteList), { expires: 365 }); // 쿠키에 1년간 저장
-        setIsFavorite(!isFavorite); // 상태 업데이트
+        localStorage.setItem('favorites', JSON.stringify(favoriteList));
+        setIsFavorite(!isFavorite);
     };
 
     return (
@@ -63,7 +69,7 @@ const Channel: React.FC = () => {
                                     {channel.snippet.title}
                                     <button
                                         onClick={toggleFavorite}
-                                        className={`ml-4 px-4 py-2 rounded ${isFavorite ? 'bg-red-500' : 'bg-gray-500'} text-white`}
+                                        className={`ml-4 px-4 py-2 rounded ${isFavorite ? 'bg-red-500' : 'bg-blue-500'} text-white hover:opacity-90 transition duration-200`}
                                     >
                                         {isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
                                     </button>
