@@ -1,26 +1,42 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import axios from 'axios';
 import dotenv from 'dotenv';
+import NodeCache from 'node-cache';
 
 dotenv.config();
 
 const router = Router();
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY;
 
-router.get('/categories', async (req: Request, res: Response) => {
+const cache = new NodeCache({ stdTTL: 86400 });
+
+router.get('/categories', async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const response = await axios.get(`https://www.googleapis.com/youtube/v3/videoCategories`, {
+        const cachedCategories = cache.get('categories');
+        if (cachedCategories) {
+            res.json(cachedCategories);
+            return;
+        }
+
+        const response = await axios.get('https://www.googleapis.com/youtube/v3/videoCategories', {
             params: {
                 part: 'snippet',
                 regionCode: 'KR',
                 hl: 'ko',
-                key: YOUTUBE_API_KEY
-            }
+                key: YOUTUBE_API_KEY,
+            },
         });
+        console.log("category res: ", response);
+
+        cache.set('categories', response.data.items);
         res.json(response.data.items);
+        return;
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: '카테고리 정보를 가져오는 데 실패했습니다.' });
+        if (!res.headersSent) {
+            res.status(500).json({ message: '카테고리 정보를 가져오는 데 실패했습니다.' });
+        }
+        next(error);
     }
 });
 
@@ -37,6 +53,7 @@ router.get('/search-channel', async (req: Request, res: Response) => {
             }
         });
         res.json(response.data.items);
+        return;
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Failed to search channel' });
@@ -55,6 +72,7 @@ router.get('/channel/:id', async (req: Request, res: Response) => {
             }
         });
         res.json(response.data.items[0]);
+        return;
     } catch (error) {
         console.error('Failed to fetch channel details:', error);
         res.status(500).json({ message: 'Failed to fetch channel details' });
@@ -74,6 +92,7 @@ router.get('/channel/videos/:playlistId', async (req: Request, res: Response) =>
             }
         });
         res.json(response.data.items);
+        return;
     } catch (error) {
         console.error('Failed to fetch channel videos:', error);
         res.status(500).json({ message: 'Failed to fetch channel videos' });
@@ -93,6 +112,7 @@ router.get('/comments/:videoId', async (req: Request, res: Response) => {
             }
         });
         res.json(response.data.items);
+        return;
     } catch (error) {
         console.error('Failed to fetch comments:', error);
         res.status(500).json({ message: 'Failed to fetch comments' });

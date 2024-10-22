@@ -105,3 +105,12 @@ button:hover {
         grid-template-columns: 1fr;
     }
 }
+
+.channel-details {
+    background-color: #1f2937; /* 어두운 배경 */
+    color: white; /* 텍스트는 흰색으로 */
+    padding: 1.5rem; /* 여백 추가 */
+    border-radius: 8px; /* 모서리 둥글게 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 약간의 그림자 */
+    margin-bottom: 2rem; /* 다른 요소와의 간격 */
+}

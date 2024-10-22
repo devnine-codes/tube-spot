@@ -1,49 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import Cookies from 'js-cookie';
 import { getCategories, getChannelDetails } from '../services/api';
 
 const Home: React.FC = () => {
-    const [categories, setCategories] = useState<any[]>([]);  // 카테고리 목록 상태
-    const [favorites, setFavorites] = useState<any[]>([]);    // 즐겨찾기 상태
-    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);  // 즐겨찾기 펼침/접힘 상태
+    const [categories, setCategories] = useState<any[]>([]);
+    const [favorites, setFavorites] = useState<any[]>([]);
+    const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
 
-    // 캐시에서 카테고리 정보 불러오기
-    const getCachedCategories = () => {
-        const cachedData = localStorage.getItem('categories');
-        return cachedData ? JSON.parse(cachedData) : null;
-    };
-
-    // 카테고리 정보를 로컬 스토리지에 저장
-    const cacheCategories = (data: any) => {
-        localStorage.setItem('categories', JSON.stringify(data));
-    };
-
-    // 카테고리 불러오기 (캐싱 적용)
+    // 카테고리 정보 불러오기
     useEffect(() => {
         const fetchCategories = async () => {
-            const cachedCategories = getCachedCategories();
-            if (cachedCategories) {
-                setCategories(cachedCategories);
-            } else {
-                try {
-                    const data = await getCategories();
-                    setCategories(data);
-                    cacheCategories(data);
-                } catch (error) {
-                    console.error('카테고리 데이터를 불러오는 데 실패했습니다.', error);
-                }
+            try {
+                const data = await getCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error('카테고리 데이터를 불러오는 데 실패했습니다.', error);
             }
         };
         fetchCategories();
     }, []);
 
-    // 캐시에서 채널 정보 불러오기
+    // 채널 정보 캐싱 로직
     const getCachedChannel = (id: string) => {
         const cachedData = localStorage.getItem(`channel_${id}`);
         return cachedData ? JSON.parse(cachedData) : null;
     };
 
-    // 채널 정보를 로컬 스토리지에 저장
     const cacheChannel = (id: string, data: any) => {
         localStorage.setItem(`channel_${id}`, JSON.stringify(data));
     };
@@ -51,7 +32,7 @@ const Home: React.FC = () => {
     // 즐겨찾기 불러오기
     useEffect(() => {
         const fetchFavorites = async () => {
-            const savedFavorites = Cookies.get('favorites');
+            const savedFavorites = localStorage.getItem('favorites');  // localStorage 사용
             if (savedFavorites) {
                 const favoriteIds = JSON.parse(savedFavorites);
                 const favoriteChannels = await Promise.all(
@@ -72,7 +53,6 @@ const Home: React.FC = () => {
         fetchFavorites();
     }, []);
 
-    // 즐겨찾기 펼치기/접기 핸들러
     const toggleFavorites = () => {
         setIsFavoritesOpen(!isFavoritesOpen);
     };
@@ -80,7 +60,6 @@ const Home: React.FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col">
             <div className="container mx-auto p-6">
-
                 {/* 즐겨찾기 섹션 */}
                 <div className="favorites-section mb-12">
                     <div className="flex justify-between items-center mb-4">

@@ -8,18 +8,38 @@ const Channel: React.FC = () => {
     const [channel, setChannel] = useState<any>(null);
     const [videos, setVideos] = useState<any[]>([]);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+    const [isFavorite, setIsFavorite] = useState(false);
 
-    // 캐시된 비디오 데이터를 로컬 스토리지에서 가져오는 함수
+    // 로컬 스토리지에서 캐시된 비디오 가져오기
     const getCachedVideos = (channelId: string) => {
         const cachedData = localStorage.getItem(`videos_${channelId}`);
         return cachedData ? JSON.parse(cachedData) : null;
     };
 
-    // 비디오 데이터를 로컬 스토리지에 저장하는 함수
+    // 비디오 데이터를 로컬 스토리지에 저장
     const cacheVideos = (channelId: string, data: any) => {
         localStorage.setItem(`videos_${channelId}`, JSON.stringify(data));
     };
 
+    // 즐겨찾기 상태 확인
+    const checkFavoriteStatus = () => {
+        const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        setIsFavorite(savedFavorites.includes(id));
+    };
+
+    // 즐겨찾기 추가/삭제 핸들러
+    const toggleFavorite = () => {
+        let savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        if (isFavorite) {
+            savedFavorites = savedFavorites.filter((favId: string) => favId !== id);
+        } else {
+            savedFavorites.push(id);
+        }
+        localStorage.setItem('favorites', JSON.stringify(savedFavorites));
+        setIsFavorite(!isFavorite);
+    };
+
+    // 채널 데이터 및 비디오 불러오기
     const fetchChannelData = async () => {
         if (!id) return;
 
@@ -44,6 +64,7 @@ const Channel: React.FC = () => {
 
     useEffect(() => {
         fetchChannelData();
+        checkFavoriteStatus(); // 즐겨찾기 상태 확인
     }, [id]);
 
     return (
@@ -54,6 +75,12 @@ const Channel: React.FC = () => {
                     <div className="channel-details text-center">
                         <h2 className="text-3xl font-bold text-white mb-4">
                             {channel.snippet.title}
+                            <button
+                                onClick={toggleFavorite}
+                                className={`ml-4 px-4 py-2 rounded ${isFavorite ? 'bg-red-500' : 'bg-gray-500'} text-white`}
+                            >
+                                {isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}
+                            </button>
                         </h2>
                         <p className="text-gray-300 mb-6">{channel.snippet.description}</p>
                         <img

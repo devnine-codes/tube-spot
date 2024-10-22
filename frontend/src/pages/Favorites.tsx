@@ -4,13 +4,31 @@ import { getChannelDetails } from '../services/api';
 const Favorites: React.FC = () => {
     const [favorites, setFavorites] = useState<any[]>([]);
 
+    const getCachedChannel = (id: string) => {
+        const cachedData = localStorage.getItem(`channel_${id}`);
+        return cachedData ? JSON.parse(cachedData) : null;
+    };
+
+    const cacheChannel = (id: string, data: any) => {
+        localStorage.setItem(`channel_${id}`, JSON.stringify(data));
+    };
+
     useEffect(() => {
         const fetchFavorites = async () => {
             const savedFavorites = localStorage.getItem('favorites');
             if (savedFavorites) {
                 const favoriteIds = JSON.parse(savedFavorites);
                 const favoriteChannels = await Promise.all(
-                    favoriteIds.map((id: string) => getChannelDetails(id))
+                    favoriteIds.map(async (id: string) => {
+                        const cachedChannel = getCachedChannel(id);
+                        if (cachedChannel) {
+                            return cachedChannel;
+                        } else {
+                            const channelData = await getChannelDetails(id);
+                            cacheChannel(id, channelData);
+                            return channelData;
+                        }
+                    })
                 );
                 setFavorites(favoriteChannels);
             }
