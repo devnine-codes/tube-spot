@@ -10,13 +10,24 @@ const Channel: React.FC = () => {
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
     const [isFavorite, setIsFavorite] = useState(false);
 
-    // 로컬 스토리지에서 캐시된 비디오 가져오기
+    // 캐시에서 채널 데이터 가져오기
+    const getCachedChannel = (channelId: string) => {
+        const cachedData = localStorage.getItem(`channel_${channelId}`);
+        return cachedData ? JSON.parse(cachedData) : null;
+    };
+
+    // 채널 데이터를 캐시에 저장하기
+    const cacheChannel = (channelId: string, data: any) => {
+        localStorage.setItem(`channel_${channelId}`, JSON.stringify(data));
+    };
+
+    // 캐시된 비디오 가져오기
     const getCachedVideos = (channelId: string) => {
         const cachedData = localStorage.getItem(`videos_${channelId}`);
         return cachedData ? JSON.parse(cachedData) : null;
     };
 
-    // 비디오 데이터를 로컬 스토리지에 저장
+    // 비디오 데이터를 캐시에 저장하기
     const cacheVideos = (channelId: string, data: any) => {
         localStorage.setItem(`videos_${channelId}`, JSON.stringify(data));
     };
@@ -43,21 +54,32 @@ const Channel: React.FC = () => {
     const fetchChannelData = async () => {
         if (!id) return;
 
+        const cachedChannel = getCachedChannel(id);
+        let channelData = cachedChannel;
+
+        if (!cachedChannel) {
+            try {
+                channelData = await getChannelDetails(id);
+                setChannel(channelData);
+                cacheChannel(id, channelData); // 캐시에 저장
+            } catch (error) {
+                console.error('Error fetching channel:', error);
+            }
+        } else {
+            setChannel(cachedChannel); // 캐시된 데이터를 사용
+        }
+
         const cachedVideos = getCachedVideos(id);
         if (cachedVideos) {
             setVideos(cachedVideos);
         } else {
             try {
-                const channelData = await getChannelDetails(id);
-                setChannel(channelData);
-
                 const playlistId = channelData.contentDetails.relatedPlaylists.uploads;
                 const videoData = await getChannelVideos(playlistId);
-
                 setVideos(videoData);
-                cacheVideos(id, videoData);
+                cacheVideos(id, videoData); // 새 데이터를 캐시에 저장
             } catch (error) {
-                console.error('Error fetching channel or videos:', error);
+                console.error('Error fetching videos:', error);
             }
         }
     };
