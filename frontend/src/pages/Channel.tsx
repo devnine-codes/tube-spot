@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getChannelDetails, getChannelVideos } from '../services/api';
 import VideoPlayer from '../components/VideoPlayer';
+import styles from '../styles/Channel.module.css';
 
 const Channel: React.FC = () => {
     const { id } = useParams();
@@ -92,9 +93,8 @@ const Channel: React.FC = () => {
     return (
         <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800">
             <div className="w-full mx-auto p-6">
-                {/* 채널 정보 표시 */}
                 {channel && (
-                    <div className="channel-details text-center">
+                    <div className={styles['channel-details']}>
                         <h2 className="text-3xl font-bold text-white mb-4">
                             {channel.snippet.title}
                             <button
@@ -113,26 +113,24 @@ const Channel: React.FC = () => {
                     </div>
                 )}
 
-                {/* 비디오 플레이어 */}
                 {selectedVideoId && (
                     <div className="mt-8">
                         <VideoPlayer videoId={selectedVideoId} />
                     </div>
                 )}
 
-                {/* 업로드된 영상 목록 */}
                 <h3 className="text-2xl font-bold mt-8 text-white">업로드된 영상</h3>
-                <div className="video-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div className={styles['video-grid']}>
                     {videos.map((video) => (
                         <div
                             key={video.snippet.resourceId.videoId}
-                            className="card cursor-pointer bg-gray-700 hover:bg-gray-600 transition duration-200"
+                            className={styles.card}
                             onClick={() => setSelectedVideoId(video.snippet.resourceId.videoId)}
                         >
                             <img
                                 src={video.snippet.thumbnails.medium.url}
                                 alt={video.snippet.title}
-                                className="w-full h-40 object-cover rounded-md"
+                                className="w-full h-40 object-cover"
                             />
                             <h4 className="mt-2 text-lg font-semibold text-white">{video.snippet.title}</h4>
                         </div>
