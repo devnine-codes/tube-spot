@@ -10,74 +10,70 @@ const Channel: React.FC = () => {
     const [videos, setVideos] = useState<any[]>([]);
     const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
     const [isFavorite, setIsFavorite] = useState(false);
-    const [showMore, setShowMore] = useState(false);  // 더보기 모달 상태
+    const [showMore, setShowMore] = useState(false); // 더보기 모달 상태
 
-    // 캐시에서 데이터 가져오기 및 저장 함수
-    const getCachedChannel = (channelId: string) => {
-        const cachedData = localStorage.getItem(`channel_${channelId}`);
-        return cachedData ? JSON.parse(cachedData) : null;
-    };
-    const cacheChannel = (channelId: string, data: any) => {
-        localStorage.setItem(`channel_${channelId}`, JSON.stringify(data));
-    };
-    const getCachedVideos = (channelId: string) => {
-        const cachedData = localStorage.getItem(`videos_${channelId}`);
-        return cachedData ? JSON.parse(cachedData) : null;
-    };
-    const cacheVideos = (channelId: string, data: any) => {
-        localStorage.setItem(`videos_${channelId}`, JSON.stringify(data));
-    };
+    const CACHE_EXPIRATION = 3 * 60 * 60 * 1000; // 캐시 만료 시간: 3시간
 
-    // 즐겨찾기 상태 확인 및 토글
-    const checkFavoriteStatus = () => {
-        const savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        setIsFavorite(savedFavorites.includes(id));
-    };
-    const toggleFavorite = () => {
-        let savedFavorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-        if (isFavorite) {
-            savedFavorites = savedFavorites.filter((favId: string) => favId !== id);
-        } else {
-            savedFavorites.push(id);
+    // 특정 키의 캐시된 데이터를 가져오고, 만료되었을 경우 null 반환
+    const getCachedData = (key: string) => {
+        const cached = localStorage.getItem(key);
+        if (!cached) return null;
+        const parsedData = JSON.parse(cached);
+        if (Date.now() - parsedData.timestamp > CACHE_EXPIRATION) {
+            localStorage.removeItem(key); // 만료된 데이터 삭제
+            return null;
         }
-        localStorage.setItem('favorites', JSON.stringify(savedFavorites));
-        setIsFavorite(!isFavorite);
+        return parsedData.data; // 만료되지 않았을 경우 데이터 반환
     };
 
-    // 채널 데이터 및 비디오 가져오기
+    // 캐시 데이터 저장 함수
+    const cacheData = (key: string, data: any) => {
+        localStorage.setItem(key, JSON.stringify({ data, timestamp: Date.now() }));
+    };
+
+    // 채널 및 비디오 데이터 가져오기
     const fetchChannelData = async () => {
         if (!id) return;
-        const cachedChannel = getCachedChannel(id);
-        let channelData = cachedChannel;
-        if (!cachedChannel) {
+
+        let channelData = getCachedData(`channel_${id}`);
+        if (!channelData) {
             try {
                 channelData = await getChannelDetails(id);
-                setChannel(channelData);
-                cacheChannel(id, channelData);
+                cacheData(`channel_${id}`, channelData); // 새 데이터 캐시에 저장
             } catch (error) {
                 console.error('Error fetching channel:', error);
             }
-        } else {
-            setChannel(cachedChannel);
         }
-        const cachedVideos = getCachedVideos(id);
-        if (cachedVideos) {
-            setVideos(cachedVideos);
-        } else {
+        setChannel(channelData);
+
+        let videoData = getCachedData(`videos_${id}`);
+        if (!videoData) {
             try {
                 const playlistId = channelData.contentDetails.relatedPlaylists.uploads;
-                const videoData = await getChannelVideos(playlistId);
-                setVideos(videoData);
-                cacheVideos(id, videoData);
+                videoData = await getChannelVideos(playlistId);
+                cacheData(`videos_${id}`, videoData); // 새 데이터 캐시에 저장
             } catch (error) {
                 console.error('Error fetching videos:', error);
             }
         }
+        setVideos(videoData);
     };
 
+    // 즐겨찾기 상태 토글
+    const toggleFavorite = () => {
+        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        const updatedFavorites = isFavorite
+            ? favorites.filter((favId: string) => favId !== id)
+            : [...favorites, id];
+        localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+        setIsFavorite(!isFavorite);
+    };
+
+    // 초기 로드 시 데이터 및 즐겨찾기 상태 확인
     useEffect(() => {
         fetchChannelData();
-        checkFavoriteStatus();
+        const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+        setIsFavorite(favorites.includes(id));
     }, [id]);
 
     return (
@@ -85,10 +81,7 @@ const Channel: React.FC = () => {
             <div className="w-full mx-auto p-6">
                 {channel && (
                     <div className={styles['channel-details']}>
-                        <img
-                            src={channel.snippet.thumbnails.high.url}
-                            alt={channel.snippet.title}
-                        />
+                        <img src={channel.snippet.thumbnails.high.url} alt={channel.snippet.title} />
                         <div>
                             <h2 className="text-3xl font-bold text-white mb-4">
                                 {channel.snippet.title}
@@ -114,14 +107,12 @@ const Channel: React.FC = () => {
                     </div>
                 )}
 
-                {/* 비디오 플레이어 */}
                 {selectedVideoId && (
                     <div className="mt-8">
                         <VideoPlayer videoId={selectedVideoId} />
                     </div>
                 )}
 
-                {/* 업로드된 영상 목록 */}
                 <h3 className="text-2xl font-bold mt-8 text-white">업로드된 영상</h3>
                 <div className={styles['video-grid']}>
                     {videos.map((video) => (
@@ -141,7 +132,7 @@ const Channel: React.FC = () => {
                 </div>
             </div>
 
-            {/* 모달 */}
+            {/* 더보기 모달 */}
             {showMore && (
                 <div>
                     <div className={styles['modal-overlay']} onClick={() => setShowMore(false)}></div>

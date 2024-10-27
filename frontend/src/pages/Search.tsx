@@ -13,15 +13,24 @@ const Search: React.FC = () => {
     const [searchInput, setSearchInput] = useState(query);
     const navigate = useNavigate();
 
+    const CACHE_DURATION_MS = 3 * 60 * 60 * 1000; // 3시간
+
     // 캐시된 검색 결과 가져오기
     const getCachedSearchResults = (query: string) => {
         const cachedData = localStorage.getItem(`search_${query}`);
-        return cachedData ? JSON.parse(cachedData) : null;
+        if (cachedData) {
+            const { data, timestamp } = JSON.parse(cachedData);
+            // 캐시가 3시간 이상 지난 경우 null 반환
+            if (Date.now() - timestamp > CACHE_DURATION_MS) return null;
+            return data;
+        }
+        return null;
     };
 
     // 검색 결과를 캐시에 저장
     const cacheSearchResults = (query: string, data: any) => {
-        localStorage.setItem(`search_${query}`, JSON.stringify(data));
+        const cacheObject = { data, timestamp: Date.now() };
+        localStorage.setItem(`search_${query}`, JSON.stringify(cacheObject));
     };
 
     useEffect(() => {
