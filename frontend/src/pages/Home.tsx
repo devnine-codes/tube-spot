@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // useNavigate 임포트
 import { getCategories, getChannelDetails } from '../services/api';
 
 const Home: React.FC = () => {
     const [categories, setCategories] = useState<any[]>([]);
     const [favorites, setFavorites] = useState<any[]>([]);
     const [isFavoritesOpen, setIsFavoritesOpen] = useState(false);
+    const navigate = useNavigate(); // useNavigate 초기화
 
     // 카테고리 정보 불러오기
     useEffect(() => {
@@ -57,6 +59,11 @@ const Home: React.FC = () => {
         setIsFavoritesOpen(!isFavoritesOpen);
     };
 
+    // 채널 상세 페이지로 이동
+    const handleChannelClick = (channelId: string) => {
+        navigate(`/channel/${channelId}`);
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-gray-800 flex flex-col">
             <div className="container mx-auto p-6">
@@ -75,7 +82,11 @@ const Home: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {favorites.length > 0 ? (
                                 favorites.map((channel) => (
-                                    <div key={channel.id} className="card bg-gray-700 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 text-center">
+                                    <div
+                                        key={channel.id}
+                                        className="card bg-gray-700 p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 text-center cursor-pointer"
+                                        onClick={() => handleChannelClick(channel.id)} // 클릭 이벤트 추가
+                                    >
                                         <img
                                             src={channel.snippet.thumbnails.medium.url}
                                             alt={channel.snippet.title}
